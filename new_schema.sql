@@ -1,7 +1,6 @@
 DROP TABLE IF EXISTS "users"
 DROP TABLE IF EXISTS "topics"
-
-
+DROP TABLE IF EXISTS "posts"
 
 
 
@@ -33,4 +32,26 @@ DROP TABLE IF EXISTS "topics"
         "description" VARCHAR(500),
         CONSTRAINT "unique_topic_name" UNIQUE "name",
         CONSTRAINT "non_empty_topicname" CHECK(LENGTH(TRIM("name"))>0)
+    );
+
+
+
+
+-- c.Allow registered users to create new posts on existing topics:
+    -- i.	Posts have a required title of at most 100 characters
+    -- ii.	The title of a post can’t be empty.
+    -- iii.	Posts should contain either a URL or a text content, but not both.
+    -- iv.	If a topic gets deleted, all the posts associated with it should be automatically deleted too.
+    -- v.	If the user who created the post gets deleted, then the post will remain, but it will become dissociated from that user.
+    CREATE TABLE "posts"(
+        "id" SERIAL PRIMARY KEY,
+        "title" VARCHAR(100) NOT NULL,
+        "URL" VARCHAR(5000) DEFAULT NULL,
+        "text_content" TEXT DEFAULT NULL,
+        "topic_id" INTEGER REFERENCES "topics" ON DELETE CASCADE,
+        "user_id" INTEGER REFERENCES "users" ON DELETE SET NULL,
+        CONSTRAINT "non_empty_title" CHECK(LENGTH(TRIM("title"))>0),
+        CONSTRAINT "url_or_text"(CHECK(LENGTH(TRIM("URL"))>0 AND LENGTH(TRIM("text_content"))=0) OR   
+                                    (LENGTH(TRIM("URL"))=0 AND LENGTH(TRIM("text_content"))>0))
+
     );
