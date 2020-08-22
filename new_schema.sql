@@ -78,4 +78,12 @@ DROP TABLE IF EXISTS "votes"
 -- e.Make sure that a given user can only vote once on a given post:
     -- i.	Hint: you can store the (up/down) value of the vote as the values 1 and -1 respectively.
     -- ii.	If the user who cast a vote gets deleted, then all their votes will remain, but will become dissociated from the user.
-    CREATE 
+    CREATE TABLE "votes"(
+        "id" SERIAL,
+        "user_id" INTEGER REFERENCES "users" ON DELETE SET NULL,
+        "post_id" INTEGER,
+        "topic_id" INTEGER,
+        "vote" INTEGER,
+        CONSTRAINT "plus_one_minus_one_vote" CHECK("vote" = 1 or "vote"= -1),
+        PRIMARY KEY("user_id","post_id")
+    )
