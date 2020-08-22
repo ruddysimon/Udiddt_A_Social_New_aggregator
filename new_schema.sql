@@ -1,9 +1,8 @@
 DROP TABLE IF EXISTS "users"
 DROP TABLE IF EXISTS "topics"
 DROP TABLE IF EXISTS "posts"
-
-
-
+DROP TABLE IF EXISTS "comments"
+DROP TABLE IF EXISTS "votes"
 
 
 -- a.Allow new users to register:
@@ -55,3 +54,28 @@ DROP TABLE IF EXISTS "posts"
                                     (LENGTH(TRIM("URL"))=0 AND LENGTH(TRIM("text_content"))>0))
 
     );
+
+
+
+--d.Allow registered users to comment on existing posts:
+    -- i.	A comment’s text content can’t be empty.
+    -- ii.	Contrary to the current linear comments, the new structure should allow comment threads at arbitrary levels.
+    -- iii.	If a post gets deleted, all comments associated with it should be automatically deleted too.
+    -- iv.	If the user who created the comment gets deleted, then the comment will remain, but it will become dissociated from that user.
+    -- v.	If a comment gets deleted, then all its descendants in the thread structure should be automatically deleted too.
+    CREATE TABLE "comments"(
+        "id" SERIAL,
+        "text_content" TEXT DEFAULT NULL,
+        "post_id" INTEGER REFERENCES "posts" ON DELETE CASCADE,
+        "user_id" INTEGER REFERENCES "users" ON DELETE SET NULL,
+        "comment_id" INTEGER REFERENCES "comments" ON DELETE CASCADE,
+        CONSTRAINT "non_empty_text_content" CHECK(LENGTH(TRIM("text_content"))>0),
+        PRIMARY KEY("user_id", "post_id")
+    );
+
+
+
+-- e.Make sure that a given user can only vote once on a given post:
+    -- i.	Hint: you can store the (up/down) value of the vote as the values 1 and -1 respectively.
+    -- ii.	If the user who cast a vote gets deleted, then all their votes will remain, but will become dissociated from the user.
+    CREATE 
