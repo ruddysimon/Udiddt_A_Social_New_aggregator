@@ -83,7 +83,6 @@ DROP TABLE IF EXISTS "votes"
         "id" SERIAL,
         "user_id" INTEGER REFERENCES "users" ON DELETE SET NULL,
         "post_id" INTEGER REFERENCES "posts" ON DELETE CASCADE,
-        "topic_id" INTEGER,
         "vote" INTEGER,
         CONSTRAINT "plus_one_minus_one_vote" CHECK("vote" = 1 or "vote"= -1),
         PRIMARY KEY("user_id","post_id")
@@ -103,12 +102,12 @@ FROM "bad_comments"
 
 UNION ALL
 
-SELECT regex_split_to_table(upvotes,',')
+SELECT regex_split_to_table("upvotes",',')
 FROM bad_posts
 
 UNION ALL
 
-SELECT regex_split_to_table(downvotes,',')
+SELECT regex_split_to_table("downvotes",',')
 FROM bad_posts;
 
 
@@ -142,3 +141,23 @@ INNER JOIN "users"
 ON users."username" = bad_comments."username"
 
 
+
+-- Migrate all the data(votes)
+INSERT INTO "votes"("user_id","post_id", "vote" )
+SELECT s1."post_id",
+        users."id",
+        1 AS "Upvotes"
+FROM("id" AS "post_id", regex_split_to_table(upvotes,',') AS "Upvoters" 
+        FROM bad_posts) as s1
+INNER JOIN "users"
+ON users."username" = s1."Upvoters"
+
+
+INSERT INTO "votes"("user_id","post_id", "vote" )
+SELECT s1."post_id",
+        users."id",
+        -1 AS "Downvotes"
+FROM("id" AS "post_id", regex_split_to_table(upvotes,',') AS "Downvoters" 
+        FROM bad_posts) as s1
+INNER JOIN "users"
+ON users."username" = s1."Downvoters"
