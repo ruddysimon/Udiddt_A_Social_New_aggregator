@@ -18,6 +18,8 @@ DROP TABLE IF EXISTS "votes"
         CONSTRAINT "non_empty_username" CHECK(LENGTH(TRIM("usernam"))>0)
     );
 
+    CREATE INDEX "last_login_last_year" ON "users"("last_login");
+
 
 
  -- b.Allow registered users to create new topics:
@@ -54,6 +56,9 @@ DROP TABLE IF EXISTS "votes"
                                     (LENGTH(TRIM("URL"))=0 AND LENGTH(TRIM("text_content"))>0))
 
     );
+    CREATE INDEX "posts_by_topic" ON "posts"("topic_id")
+    CREATE INDEX "posts_by_users" ON "posts"("user_id")
+    CREATE INDEX "posts_link_url" ON "posts"("URL")
 
 
 
@@ -68,10 +73,12 @@ DROP TABLE IF EXISTS "votes"
         "text_content" TEXT DEFAULT NULL,
         "post_id" INTEGER REFERENCES "posts" ON DELETE CASCADE,
         "user_id" INTEGER REFERENCES "users" ON DELETE SET NULL,
-        "comment_id" INTEGER REFERENCES "comments" ON DELETE CASCADE,
+        "parent_id" INTEGER REFERENCES "comments" ON DELETE CASCADE,
         CONSTRAINT "non_empty_text_content" CHECK(LENGTH(TRIM("text_content"))>0),
         PRIMARY KEY("user_id", "post_id")
     );
+    CREATE INDEX "parent_comment_childeren" ON "comments"("parent_id")
+
 
 
 
@@ -87,6 +94,8 @@ DROP TABLE IF EXISTS "votes"
         CONSTRAINT "plus_one_minus_one_vote" CHECK("vote" = 1 or "vote"= -1),
         PRIMARY KEY("user_id","post_id")
     );
+
+    CREATE INDEX "score_votes" ON "votes"("vote")
 
 
 -- Migrate all the data(users)
